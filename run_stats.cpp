@@ -27,6 +27,8 @@
 #include <sys/time.h>
 #include <math.h>
 #include <algorithm>
+#include <sstream>
+#include "http.h"
 
 #ifdef HAVE_ASSERT_H
 #include <assert.h>
@@ -270,6 +272,34 @@ unsigned long int run_stats::get_total_latency(void)
 #define USEC_FORMAT(value) \
     (value) / 1000000, (value) % 1000000
 
+int post(int sd, struct http_url *url) {
+	char buf[1024];
+
+	snprintf(
+		buf,
+		sizeof(buf),
+		"\
+POST /%s HTTP/1.1\r\n\
+User-Agent: Mozilla/4.0 (Linux)\r\n\
+Host: %s\r\n\
+Accept: */*\r\n\
+Content-Length: 13\r\n\
+Connection: close\r\n\
+\r\n\
+%s\r\n\
+\r\n",
+		url->query,
+		url->host,
+        url->body);
+
+	if (http_send(sd, buf)) {
+		perror("http_send");
+		return -1;
+	}
+
+	return 0;
+}
+
 void run_stats::save_csv_one_sec(FILE *f,
                                  unsigned long int& total_get_ops,
                                  unsigned long int& total_set_ops,
@@ -297,10 +327,88 @@ void run_stats::save_csv_one_sec(FILE *f,
                 i->m_get_cmd.m_hits,
                 i->m_wait_cmd.m_ops,
                 USEC_FORMAT(AVERAGE(i->m_wait_cmd.m_total_latency, i->m_wait_cmd.m_ops)));
-
         total_set_ops += i->m_set_cmd.m_ops;
         total_get_ops += i->m_get_cmd.m_ops;
         total_wait_ops += i->m_wait_cmd.m_ops;
+
+    std::ostringstream stringStream;
+//stringStream << "POST " << "http://100.27.7.63/metrics/job/memtier/instance/100.27.7.63 " << "HTTP/1.1\r\n\";
+    stringStream << "m_second ";
+stringStream << i->m_second;
+stringStream << "\n";
+    stringStream << "m_ops_set ";
+stringStream << i->m_set_cmd.m_ops;
+stringStream << "\n";
+    stringStream << "m_total_latency_set ";
+stringStream << USEC_FORMAT(AVERAGE(i->m_set_cmd.m_total_latency, i->m_set_cmd.m_ops));
+stringStream << "\n";
+    stringStream << "m_bytes_set ";
+stringStream << i->m_set_cmd.m_bytes;
+stringStream << "\n";
+    stringStream << "m_ops_get ";
+stringStream << i->m_get_cmd.m_ops;
+stringStream << "\n";
+    stringStream << "m_total_latency_get ";
+stringStream << USEC_FORMAT(AVERAGE(i->m_get_cmd.m_total_latency, i->m_get_cmd.m_ops));
+stringStream << "\n";
+    stringStream << "m_bytes_get ";
+stringStream << i->m_get_cmd.m_bytes;
+stringStream << "\n";
+    stringStream << "m_misses_get ";
+stringStream << i->m_get_cmd.m_misses;
+stringStream << "\n";
+    stringStream << "m_hits_get ";
+stringStream << i->m_get_cmd.m_hits;
+stringStream << "\n";
+    stringStream << "m_ops_wait ";
+stringStream << i->m_wait_cmd.m_ops;
+stringStream << "\n";
+    stringStream << "m_total_latency_wait ";
+stringStream << USEC_FORMAT(AVERAGE(i->m_wait_cmd.m_total_latency, i->m_wait_cmd.m_ops));
+stringStream << "\n";
+
+	struct http_url *url;
+	struct http_message msg;
+	int sd;
+
+	if (!(url = http_parse_url("http://100.27.7.63/metrics/job/memtier/instance/100.27.7.63")) ||
+			!(sd = http_connect(url))) {
+		free(url);
+		perror("http_connect");
+	} else {
+
+        const std::string& tmp = stringStream.str();
+        url->body = tmp.c_str();
+
+        memset(&msg, 0, sizeof(msg));
+
+	    if (!post(sd, url)) {
+		    while (http_response(sd, &msg) > 0) {
+			    if (msg.content) {
+				    write(1, msg.content, msg.length);
+			    }
+		    }
+	    }
+
+	    free(url);
+	    close(sd);
+
+	    if (msg.header.code != 200) {
+		    fprintf(
+			    f,
+			    "error: returned HTTP code %d\n",
+			    msg.header.code);
+	    }else{
+            std::string content(msg.content);
+            fprintf(f, "Response from Prometheus\n %u\nText: %s\n",
+            msg.header.code,                  // 200
+            content.c_str());                         //
+        }
+    }
+
+//sample 
+//http://172.31.61.42:9091/metrics/job/india_corona_cases/instance/172.31.61.42
+  //india_current_corona_cases $india_corona_cases
     }
 }
 

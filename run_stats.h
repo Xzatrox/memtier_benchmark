@@ -30,6 +30,7 @@
 #include "JSON_handler.h"
 #include "deps/hdr_histogram/hdr_histogram.h"
 #include "deps/hdr_histogram/hdr_histogram_log.h"
+#include "http.h"
 
 
 inline long long int ts_diff(struct timeval a, struct timeval b)

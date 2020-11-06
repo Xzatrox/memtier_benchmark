@@ -27,7 +27,9 @@ memtier_benchmark_CPPFLAGS = \
 	$(LIBEVENT_CFLAGS) \
 	$(LIBEVENT_OPENSSL_CFLAGS) \
 	$(LIBCRYPTO_CFLAGS) \
-	$(LIBSSL_CFLAGS)
+	$(LIBSSL_CFLAGS) \
+	$(LIBCURL_CFLAGS)
+
 memtier_benchmark_SOURCES = \
 	memtier_benchmark.cpp memtier_benchmark.h \
 	client.cpp client.h \
@@ -40,16 +42,19 @@ memtier_benchmark_SOURCES = \
 	obj_gen.cpp obj_gen.h \
 	item.cpp item.h \
 	file_io.cpp file_io.h \
+	http.cpp http.h \
 	config_types.cpp config_types.h \
 	deps/hdr_histogram/hdr_histogram_log.c deps/hdr_histogram/hdr_histogram_log.h deps/hdr_histogram/byteorder.h \
 	deps/hdr_histogram/hdr_histogram.c deps/hdr_histogram/hdr_histogram.h \
-	deps/hdr_histogram/hdr_time.c deps/hdr_histogram/hdr_time.h deps/hdr_histogram/hdr_encoding.c deps/hdr_histogram/hdr_encoding.h
+	deps/hdr_histogram/hdr_time.c deps/hdr_histogram/hdr_time.h deps/hdr_histogram/hdr_encoding.c deps/hdr_histogram/hdr_encoding.h 
+	
 
 memtier_benchmark_LDADD = \
 	$(LIBEVENT_LIBS) \
 	$(LIBEVENT_OPENSSL_LIBS) \
 	$(LIBCRYPTO_LIBS) \
-	$(LIBSSL_LIBS)
+	$(LIBSSL_LIBS) \
+	$(LIBCURL_LIBS)
 
 dist_man1_MANS = memtier_benchmark.1
 

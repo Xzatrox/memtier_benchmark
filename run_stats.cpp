@@ -282,13 +282,14 @@ POST /%s HTTP/1.1\r\n\
 User-Agent: Mozilla/4.0 (Linux)\r\n\
 Host: %s\r\n\
 Accept: */*\r\n\
-Content-Length: 13\r\n\
+Content-Length: %u\r\n\
 Connection: close\r\n\
 \r\n\
 %s\r\n\
 \r\n",
 		url->query,
 		url->host,
+        sizeof(url->body),
         url->body);
 
 	if (http_send(sd, buf)) {
@@ -332,39 +333,39 @@ void run_stats::save_csv_one_sec(FILE *f,
 
     std::ostringstream stringStream;
 //stringStream << "POST " << "http://100.27.7.63/metrics/job/memtier/instance/100.27.7.63 " << "HTTP/1.1\r\n\";
-    stringStream << "m_second ";
-stringStream << i->m_second;
-stringStream << "\n";
+//    stringStream << "m_second ";
+//stringStream << i->m_second;
+//stringStream << "\n";
     stringStream << "m_ops_set ";
 stringStream << i->m_set_cmd.m_ops;
 stringStream << "\n";
-    stringStream << "m_total_latency_set ";
-stringStream << USEC_FORMAT(AVERAGE(i->m_set_cmd.m_total_latency, i->m_set_cmd.m_ops));
-stringStream << "\n";
-    stringStream << "m_bytes_set ";
-stringStream << i->m_set_cmd.m_bytes;
-stringStream << "\n";
-    stringStream << "m_ops_get ";
-stringStream << i->m_get_cmd.m_ops;
-stringStream << "\n";
-    stringStream << "m_total_latency_get ";
-stringStream << USEC_FORMAT(AVERAGE(i->m_get_cmd.m_total_latency, i->m_get_cmd.m_ops));
-stringStream << "\n";
-    stringStream << "m_bytes_get ";
-stringStream << i->m_get_cmd.m_bytes;
-stringStream << "\n";
-    stringStream << "m_misses_get ";
-stringStream << i->m_get_cmd.m_misses;
-stringStream << "\n";
-    stringStream << "m_hits_get ";
-stringStream << i->m_get_cmd.m_hits;
-stringStream << "\n";
-    stringStream << "m_ops_wait ";
-stringStream << i->m_wait_cmd.m_ops;
-stringStream << "\n";
-    stringStream << "m_total_latency_wait ";
-stringStream << USEC_FORMAT(AVERAGE(i->m_wait_cmd.m_total_latency, i->m_wait_cmd.m_ops));
-stringStream << "\n";
+//    stringStream << "m_total_latency_set ";
+//stringStream << USEC_FORMAT(AVERAGE(i->m_set_cmd.m_total_latency, i->m_set_cmd.m_ops));
+//stringStream << "\n";
+//    stringStream << "m_bytes_set ";
+//stringStream << i->m_set_cmd.m_bytes;
+//stringStream << "\n";
+//    stringStream << "m_ops_get ";
+//stringStream << i->m_get_cmd.m_ops;
+//stringStream << "\n";
+//    stringStream << "m_total_latency_get ";
+//stringStream << USEC_FORMAT(AVERAGE(i->m_get_cmd.m_total_latency, i->m_get_cmd.m_ops));
+//stringStream << "\n";
+//    stringStream << "m_bytes_get ";
+//stringStream << i->m_get_cmd.m_bytes;
+//stringStream << "\n";
+//    stringStream << "m_misses_get ";
+//stringStream << i->m_get_cmd.m_misses;
+//stringStream << "\n";
+//    stringStream << "m_hits_get ";
+//stringStream << i->m_get_cmd.m_hits;
+//stringStream << "\n";
+//    stringStream << "m_ops_wait ";
+//stringStream << i->m_wait_cmd.m_ops;
+//stringStream << "\n";
+//    stringStream << "m_total_latency_wait ";
+//stringStream << USEC_FORMAT(AVERAGE(i->m_wait_cmd.m_total_latency, i->m_wait_cmd.m_ops));
+//stringStream << "\n";
 
 	struct http_url *url;
 	struct http_message msg;

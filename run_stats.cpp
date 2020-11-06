@@ -28,7 +28,6 @@
 #include <math.h>
 #include <algorithm>
 #include <sstream>
-#include "http.h"
 
 #ifdef HAVE_ASSERT_H
 #include <assert.h>
@@ -371,7 +370,7 @@ stringStream << "\n";
 	struct http_message msg;
 	int sd;
 
-	if (!(url = http_parse_url("http://100.27.7.63/metrics/job/memtier/instance/100.27.7.63")) ||
+	if (!(url = http_parse_url("http://10.0.0.215:9091/metrics/job/memtier/instance/10.0.0.215")) ||
 			!(sd = http_connect(url))) {
 		free(url);
 		perror("http_connect");

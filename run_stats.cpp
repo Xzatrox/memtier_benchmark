@@ -284,8 +284,9 @@ Host: %s\r\n\
 Accept: */*\r\n\
 Content-Length: %u\r\n\
 Connection: close\r\n\
+\r\n\
 %s\r\n\
-",
+\r\n",
 		url->query,
 		url->host,
         sizeof(url->body),

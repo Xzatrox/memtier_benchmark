@@ -284,9 +284,8 @@ Host: %s\r\n\
 Accept: */*\r\n\
 Content-Length: %u\r\n\
 Connection: close\r\n\
-\r\n\
 %s\r\n\
-\r\n",
+",
 		url->query,
 		url->host,
         sizeof(url->body),
@@ -298,6 +297,51 @@ Connection: close\r\n\
 	}
 
 	return 0;
+}
+
+void submit_metrics(FILE *f, std::ostringstream & stringStream)
+{
+	struct http_url *url;
+	struct http_message msg;
+	int sd;
+
+	if (!(url = http_parse_url("http://10.0.0.215:9091/metrics/job/memtier/instance/10.0.0.215")) ||
+			!(sd = http_connect(url))) {
+		free(url);
+		perror("http_connect");
+	} else {
+
+        const std::string& tmp = stringStream.str();
+        url->body = tmp.c_str();
+
+        memset(&msg, 0, sizeof(msg));
+
+	    if (!post(sd, url)) {
+		    while (http_response(sd, &msg) > 0) {
+			    if (msg.content) {
+				    write(1, msg.content, msg.length);
+			    }
+		    }
+	    }
+
+	    free(url);
+	    close(sd);
+
+	    if (msg.header.code != 200) {
+
+            std::string content(msg.content);
+		    fprintf(
+			    f,
+			    "error: returned HTTP code %d\nText: %s\n",
+			    msg.header.code,
+                content.c_str());
+	    }else{
+            std::string content(msg.content);
+            fprintf(f, "Response from Prometheus\n %u\nText: %s\n",
+            msg.header.code,                  // 200
+            content.c_str());                         //
+        }
+    }
 }
 
 void run_stats::save_csv_one_sec(FILE *f,
@@ -333,12 +377,13 @@ void run_stats::save_csv_one_sec(FILE *f,
 
     std::ostringstream stringStream;
 //stringStream << "POST " << "http://100.27.7.63/metrics/job/memtier/instance/100.27.7.63 " << "HTTP/1.1\r\n\";
-//    stringStream << "m_second ";
-//stringStream << i->m_second;
-//stringStream << "\n";
+    stringStream << "m_second{label=\"second\" ";
+stringStream << i->m_second;
+stringStream << "\n";
     stringStream << "m_ops_set ";
 stringStream << i->m_set_cmd.m_ops;
-stringStream << "\n";
+submit_metrics(f, stringStream);
+//stringStream << "\n";
 //    stringStream << "m_total_latency_set ";
 //stringStream << USEC_FORMAT(AVERAGE(i->m_set_cmd.m_total_latency, i->m_set_cmd.m_ops));
 //stringStream << "\n";
@@ -366,45 +411,6 @@ stringStream << "\n";
 //    stringStream << "m_total_latency_wait ";
 //stringStream << USEC_FORMAT(AVERAGE(i->m_wait_cmd.m_total_latency, i->m_wait_cmd.m_ops));
 //stringStream << "\n";
-
-	struct http_url *url;
-	struct http_message msg;
-	int sd;
-
-	if (!(url = http_parse_url("http://10.0.0.215:9091/metrics/job/memtier/instance/10.0.0.215")) ||
-			!(sd = http_connect(url))) {
-		free(url);
-		perror("http_connect");
-	} else {
-
-        const std::string& tmp = stringStream.str();
-        url->body = tmp.c_str();
-
-        memset(&msg, 0, sizeof(msg));
-
-	    if (!post(sd, url)) {
-		    while (http_response(sd, &msg) > 0) {
-			    if (msg.content) {
-				    write(1, msg.content, msg.length);
-			    }
-		    }
-	    }
-
-	    free(url);
-	    close(sd);
-
-	    if (msg.header.code != 200) {
-		    fprintf(
-			    f,
-			    "error: returned HTTP code %d\n",
-			    msg.header.code);
-	    }else{
-            std::string content(msg.content);
-            fprintf(f, "Response from Prometheus\n %u\nText: %s\n",
-            msg.header.code,                  // 200
-            content.c_str());                         //
-        }
-    }
 
 //sample 
 //http://172.31.61.42:9091/metrics/job/india_corona_cases/instance/172.31.61.42

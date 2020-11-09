@@ -28,6 +28,8 @@
 #include <math.h>
 #include <algorithm>
 #include <sstream>
+#include <iostream>
+#include <exception>
 
 #ifdef HAVE_ASSERT_H
 #include <assert.h>
@@ -164,6 +166,7 @@ void run_stats::roll_cur_stats(struct timeval* ts)
 void run_stats::update_get_op(struct timeval* ts, unsigned int bytes, unsigned int latency, unsigned int hits, unsigned int misses)
 {
 
+try{
 const unsigned int sec = ts_diff(m_start_time, *ts) / 1000000;
 std::ostringstream stringStream;
 stringStream << "./pmm_submit_get.sh ";
@@ -178,6 +181,7 @@ stringStream << " ";
 stringStream << misses;
 const std::string& tmp = stringStream.str();
 system(tmp.c_str());
+}catch(std::exception& e){std::cout << e.what() << '\n';}
 
     roll_cur_stats(ts);
     m_cur_stats.m_get_cmd.update_op(bytes, latency, hits, misses);
@@ -298,81 +302,6 @@ unsigned long int run_stats::get_total_latency(void)
     ((unsigned int) ((count) > 0 ? (total) / (count) : 0))
 #define USEC_FORMAT(value) \
     (value) / 1000000, (value) % 1000000
-
-int post(int sd, struct http_url *url) {
-	char buf[1024];
-
-	snprintf(
-		buf,
-		sizeof(buf),
-		"\
-POST /%s HTTP/1.1\r\n\
-User-Agent: Mozilla/4.0 (Linux)\r\n\
-Host: %s\r\n\
-Accept: */*\r\n\
-Content-Length: %u\r\n\
-Content-Type: text/plain; version=0.0.4\r\n\
-Connection: close\r\n\
-#\r\n\
-%s\r\n\
-\r\n",
-		url->query,
-		url->host,
-        sizeof(url->body),
-        url->body);
-
-	if (http_send(sd, buf)) {
-		perror("http_send");
-		return -1;
-	}
-
-	return 0;
-}
-
-void submit_metrics(FILE *f, std::ostringstream & stringStream)
-{
-	struct http_url *url;
-	struct http_message msg;
-	int sd;
-
-	if (!(url = http_parse_url("http://10.0.0.215:9091/metrics/job/memtier/instance/10.0.0.215")) ||
-			!(sd = http_connect(url))) {
-		free(url);
-		perror("http_connect");
-	} else {
-
-        const std::string& tmp = stringStream.str();
-        url->body = tmp.c_str();
-
-        memset(&msg, 0, sizeof(msg));
-
-	    if (!post(sd, url)) {
-		    while (http_response(sd, &msg) > 0) {
-			    if (msg.content) {
-				    write(1, msg.content, msg.length);
-			    }
-		    }
-	    }
-
-	    free(url);
-	    close(sd);
-
-	    if (msg.header.code != 200) {
-
-            std::string content(msg.content);
-		    fprintf(
-			    f,
-			    "error: returned HTTP code %d\nText: %s\n",
-			    msg.header.code,
-                content.c_str());
-	    }else{
-            std::string content(msg.content);
-            fprintf(f, "Response from Prometheus\n %u\nText: %s\n",
-            msg.header.code,                  // 200
-            content.c_str());                         //
-        }
-    }
-}
 
 void run_stats::save_csv_one_sec(FILE *f,
                                  unsigned long int& total_get_ops,

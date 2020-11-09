@@ -163,15 +163,11 @@ void run_stats::roll_cur_stats(struct timeval* ts)
 
 void run_stats::update_get_op(struct timeval* ts, unsigned int bytes, unsigned int latency, unsigned int hits, unsigned int misses)
 {
-    roll_cur_stats(ts);
-    m_cur_stats.m_get_cmd.update_op(bytes, latency, hits, misses);
 
-    m_totals.update_op(bytes, latency);
-    hdr_record_value(m_get_latency_histogram,latency);
-
-/*std::ostringstream stringStream;
+const unsigned int sec = ts_diff(m_start_time, *ts) / 1000000;
+std::ostringstream stringStream;
 stringStream << "./pmm_submit_get.sh ";
-stringStream << ts->tv_sec;
+stringStream << sec;
 stringStream << " ";
 stringStream << bytes;
 stringStream << " ";
@@ -181,27 +177,34 @@ stringStream << hits;
 stringStream << " ";
 stringStream << misses;
 const std::string& tmp = stringStream.str();
-system(tmp.c_str());*/
+system(tmp.c_str());
+
+    roll_cur_stats(ts);
+    m_cur_stats.m_get_cmd.update_op(bytes, latency, hits, misses);
+
+    m_totals.update_op(bytes, latency);
+    hdr_record_value(m_get_latency_histogram,latency);
 }
 
 void run_stats::update_set_op(struct timeval* ts, unsigned int bytes, unsigned int latency)
 {
+const unsigned int sec = ts_diff(m_start_time, *ts) / 1000000;
+std::ostringstream stringStream;
+stringStream << "./pmm_submit_set.sh ";
+stringStream << sec;
+stringStream << " ";
+stringStream << bytes;
+stringStream << " ";
+stringStream << latency;
+const std::string& tmp = stringStream.str();
+system(tmp.c_str());
+
     roll_cur_stats(ts);
 
     m_cur_stats.m_set_cmd.update_op(bytes, latency);
 
     m_totals.update_op(bytes, latency);
     hdr_record_value(m_set_latency_histogram,latency);
-
-/*std::ostringstream stringStream;
-stringStream << "./pmm_submit_set.sh ";
-stringStream << ts->tv_sec;
-stringStream << " ";
-stringStream << bytes;
-stringStream << " ";
-stringStream << latency;
-const std::string& tmp = stringStream.str();
-system(tmp.c_str());*/
 }
 
 void run_stats::update_moved_get_op(struct timeval* ts, unsigned int bytes, unsigned int latency)

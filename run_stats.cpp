@@ -283,8 +283,9 @@ User-Agent: Mozilla/4.0 (Linux)\r\n\
 Host: %s\r\n\
 Accept: */*\r\n\
 Content-Length: %u\r\n\
+Content-Type: text/plain; version=0.0.4\r\n\
 Connection: close\r\n\
-\r\n\
+#\r\n\
 %s\r\n\
 \r\n",
 		url->query,
@@ -377,13 +378,17 @@ void run_stats::save_csv_one_sec(FILE *f,
         total_wait_ops += i->m_wait_cmd.m_ops;
 
     std::ostringstream stringStream;
+stringStream << "echo ";
 //stringStream << "POST " << "http://100.27.7.63/metrics/job/memtier/instance/100.27.7.63 " << "HTTP/1.1\r\n\";
-    stringStream << "m_second{label=\"second\" ";
+    stringStream << "\"memtier_second ";
 stringStream << i->m_second;
-stringStream << "\n";
-    stringStream << "m_ops_set ";
-stringStream << i->m_set_cmd.m_ops;
-submit_metrics(f, stringStream);
+stringStream << "\" | curl --data-binary @- http://10.0.0.215:9091/metrics/job/memtier";
+const std::string& tmp = stringStream.str();
+system(tmp.c_str());
+//stringStream << "}\n";
+//    stringStream << "m_ops_set ";
+//stringStream << i->m_set_cmd.m_ops;
+//submit_metrics(f, stringStream);
 //stringStream << "\n";
 //    stringStream << "m_total_latency_set ";
 //stringStream << USEC_FORMAT(AVERAGE(i->m_set_cmd.m_total_latency, i->m_set_cmd.m_ops));

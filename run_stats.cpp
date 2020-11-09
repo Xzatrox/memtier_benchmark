@@ -165,6 +165,22 @@ void run_stats::update_get_op(struct timeval* ts, unsigned int bytes, unsigned i
 {
     roll_cur_stats(ts);
     m_cur_stats.m_get_cmd.update_op(bytes, latency, hits, misses);
+
+std::ostringstream stringStream;
+stringStream << "./pmm_submit_get.sh ";
+stringStream << ts->tv_sec;
+stringStream << " ";
+stringStream << bytes;
+stringStream << " ";
+stringStream << latency;
+stringStream << " ";
+stringStream << hits;
+stringStream << " ";
+stringStream << misses;
+stringStream << " ";
+const std::string& tmp = stringStream.str();
+system(tmp.c_str());
+
     m_totals.update_op(bytes, latency);
     hdr_record_value(m_get_latency_histogram,latency);
 
@@ -175,6 +191,17 @@ void run_stats::update_set_op(struct timeval* ts, unsigned int bytes, unsigned i
     roll_cur_stats(ts);
 
     m_cur_stats.m_set_cmd.update_op(bytes, latency);
+
+std::ostringstream stringStream;
+stringStream << "./pmm_submit_set.sh ";
+stringStream << ts->tv_sec;
+stringStream << " ";
+stringStream << bytes;
+stringStream << " ";
+stringStream << latency;
+const std::string& tmp = stringStream.str();
+system(tmp.c_str());
+
     m_totals.update_op(bytes, latency);
     hdr_record_value(m_set_latency_histogram,latency);
 }
@@ -377,13 +404,10 @@ void run_stats::save_csv_one_sec(FILE *f,
         total_get_ops += i->m_get_cmd.m_ops;
         total_wait_ops += i->m_wait_cmd.m_ops;
 
-    std::ostringstream stringStream;
+/*    std::ostringstream stringStream;
 stringStream << "./pmm_submit.sh ";
-//stringStream << "POST " << "http://100.27.7.63/metrics/job/memtier/instance/100.27.7.63 " << "HTTP/1.1\r\n\";
-//    stringStream << "\"memtier_second ";
 stringStream << i->m_second;
 stringStream << " ";
-//stringStream << "\memtier_ops_set ";
 stringStream << i->m_set_cmd.m_ops;
 stringStream << " ";
 stringStream << USEC_FORMAT(AVERAGE(i->m_set_cmd.m_total_latency, i->m_set_cmd.m_ops));
@@ -403,45 +427,8 @@ stringStream << " ";
 stringStream <<                 i->m_wait_cmd.m_ops;
 stringStream << " ";
 stringStream <<                 USEC_FORMAT(AVERAGE(i->m_wait_cmd.m_total_latency, i->m_wait_cmd.m_ops));
-//stringStream << " | curl --data-binary @- http://10.0.0.215:9091/metrics/job/memtier";
-const std::string& tmp = stringStream.str();
 system(tmp.c_str());
-//stringStream << "}\n";
-//    stringStream << "m_ops_set ";
-//stringStream << i->m_set_cmd.m_ops;
-//submit_metrics(f, stringStream);
-//stringStream << "\n";
-//    stringStream << "m_total_latency_set ";
-//stringStream << USEC_FORMAT(AVERAGE(i->m_set_cmd.m_total_latency, i->m_set_cmd.m_ops));
-//stringStream << "\n";
-//    stringStream << "m_bytes_set ";
-//stringStream << i->m_set_cmd.m_bytes;
-//stringStream << "\n";
-//    stringStream << "m_ops_get ";
-//stringStream << i->m_get_cmd.m_ops;
-//stringStream << "\n";
-//    stringStream << "m_total_latency_get ";
-//stringStream << USEC_FORMAT(AVERAGE(i->m_get_cmd.m_total_latency, i->m_get_cmd.m_ops));
-//stringStream << "\n";
-//    stringStream << "m_bytes_get ";
-//stringStream << i->m_get_cmd.m_bytes;
-//stringStream << "\n";
-//    stringStream << "m_misses_get ";
-//stringStream << i->m_get_cmd.m_misses;
-//stringStream << "\n";
-//    stringStream << "m_hits_get ";
-//stringStream << i->m_get_cmd.m_hits;
-//stringStream << "\n";
-//    stringStream << "m_ops_wait ";
-//stringStream << i->m_wait_cmd.m_ops;
-//stringStream << "\n";
-//    stringStream << "m_total_latency_wait ";
-//stringStream << USEC_FORMAT(AVERAGE(i->m_wait_cmd.m_total_latency, i->m_wait_cmd.m_ops));
-//stringStream << "\n";
-
-//sample 
-//http://172.31.61.42:9091/metrics/job/india_corona_cases/instance/172.31.61.42
-  //india_current_corona_cases $india_corona_cases
+*/
     }
 }
 

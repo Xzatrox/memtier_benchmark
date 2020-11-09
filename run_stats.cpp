@@ -169,7 +169,7 @@ void run_stats::update_get_op(struct timeval* ts, unsigned int bytes, unsigned i
     m_totals.update_op(bytes, latency);
     hdr_record_value(m_get_latency_histogram,latency);
 
-std::ostringstream stringStream;
+/*std::ostringstream stringStream;
 stringStream << "./pmm_submit_get.sh ";
 stringStream << ts->tv_sec;
 stringStream << " ";
@@ -181,7 +181,7 @@ stringStream << hits;
 stringStream << " ";
 stringStream << misses;
 const std::string& tmp = stringStream.str();
-system(tmp.c_str());
+system(tmp.c_str());*/
 }
 
 void run_stats::update_set_op(struct timeval* ts, unsigned int bytes, unsigned int latency)
@@ -193,7 +193,7 @@ void run_stats::update_set_op(struct timeval* ts, unsigned int bytes, unsigned i
     m_totals.update_op(bytes, latency);
     hdr_record_value(m_set_latency_histogram,latency);
 
-std::ostringstream stringStream;
+/*std::ostringstream stringStream;
 stringStream << "./pmm_submit_set.sh ";
 stringStream << ts->tv_sec;
 stringStream << " ";
@@ -201,7 +201,7 @@ stringStream << bytes;
 stringStream << " ";
 stringStream << latency;
 const std::string& tmp = stringStream.str();
-system(tmp.c_str());
+system(tmp.c_str());*/
 }
 
 void run_stats::update_moved_get_op(struct timeval* ts, unsigned int bytes, unsigned int latency)

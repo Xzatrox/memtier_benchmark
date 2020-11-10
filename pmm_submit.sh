@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-cat <<EOF | curl --data-binary @- http://100.27.7.63:9091/metrics/job/memtier
+cat <<EOF | curl --data-binary @- http://10.0.0.215:9091/metrics/job/memtier
 memtier_second $1
 memtier_set_ops $2
 memtier_set_latency_avg $3

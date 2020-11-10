@@ -181,6 +181,7 @@ try{
     stringStream << misses;
     const std::string& tmp = stringStream.str();
     system(tmp.c_str());
+std::cout << tmp.c_str();
     } catch(std::exception& e) {
         std::cout << e.what() << '\n';
 }
@@ -194,16 +195,21 @@ try{
 
 void run_stats::update_set_op(struct timeval* ts, unsigned int bytes, unsigned int latency)
 {
-const unsigned int sec = ts_diff(m_start_time, *ts) / 1000000;
-std::ostringstream stringStream;
-stringStream << "./pmm_submit_set.sh ";
-stringStream << sec;
-stringStream << " ";
-stringStream << bytes;
-stringStream << " ";
-stringStream << latency;
-const std::string& tmp = stringStream.str();
-system(tmp.c_str());
+    try{
+    const unsigned int sec = ts_diff(m_start_time, *ts) / 1000000;
+    std::ostringstream stringStream;
+    stringStream << "./pmm_submit_set.sh ";
+    stringStream << sec;
+    stringStream << " ";
+    stringStream << bytes;
+    stringStream << " ";
+    stringStream << latency;
+    const std::string& tmp = stringStream.str();
+std::cout << tmp.c_str();
+    system(tmp.c_str());
+    } catch(std::exception& e) {
+        std::cout << e.what() << '\n';
+    }
 
     roll_cur_stats(ts);
 

@@ -30,6 +30,9 @@
 #include <sstream>
 #include <iostream>
 #include <exception>
+#include <thread>
+#include <mutex>
+#include <future>
 
 #ifdef HAVE_ASSERT_H
 #include <assert.h>
@@ -163,6 +166,34 @@ void run_stats::roll_cur_stats(struct timeval* ts)
     }
 }
 
+int submit_stats_pm(const unsigned int sec, unsigned int bytes, unsigned int latency, unsigned int hits = 0, unsigned int misses = 0, bool is_get = false)
+{
+    int exitcode = -1;
+    try{
+        std::ostringstream stringStream;
+        if (is_get) 
+            stringStream << "./pmm_submit_get.sh ";
+        else
+            stringStream << "./pmm_submit_gst.sh ";
+        stringStream << sec;
+        stringStream << " ";
+        stringStream << bytes;
+        stringStream << " ";
+        stringStream << latency;
+        if (is_get) {
+            stringStream << " ";
+            stringStream << hits;
+            stringStream << " ";
+            stringStream << misses;
+        }
+        const std::string& tmp = stringStream.str();
+        exitcode = system(tmp.c_str());
+        } catch(std::exception& e) {
+            std::cout << "Fail: " << e.what() << '\n';
+    }
+    return exitcode;
+}
+
 void run_stats::update_get_op(struct timeval* ts, unsigned int bytes, unsigned int latency, unsigned int hits, unsigned int misses)
 {
     roll_cur_stats(ts);
@@ -171,25 +202,11 @@ void run_stats::update_get_op(struct timeval* ts, unsigned int bytes, unsigned i
     m_totals.update_op(bytes, latency);
     hdr_record_value(m_get_latency_histogram,latency);
 
-try{
     const unsigned int sec = ts_diff(m_start_time, *ts) / 1000000;
-    std::ostringstream stringStream;
-    stringStream << "./pmm_submit_get.sh ";
-    stringStream << sec;
-    stringStream << " ";
-    stringStream << bytes;
-    stringStream << " ";
-    stringStream << latency;
-    stringStream << " ";
-    stringStream << hits;
-    stringStream << " ";
-    stringStream << misses;
-    const std::string& tmp = stringStream.str();
-    int exitcode = system(tmp.c_str());
+    //int exitcode = submit_stats_pm(sec, bytes, latency, hits, misses, true);
+    auto f1 = std::async(&submit_stats_pm, sec, bytes, latency, hits, misses, true);
     //std::cout << tmp.c_str() << " exit code:" << exitcode << '\n';
-    } catch(std::exception& e) {
-        std::cout << "Fail: " << e.what() << '\n';
-}
+
 //std::cout << "run_stats::update_get_op - done \n";
 }
 
@@ -202,22 +219,12 @@ void run_stats::update_set_op(struct timeval* ts, unsigned int bytes, unsigned i
     m_totals.update_op(bytes, latency);
     hdr_record_value(m_set_latency_histogram,latency);
 
-    try{
     const unsigned int sec = ts_diff(m_start_time, *ts) / 1000000;
-    std::ostringstream stringStream;
-    stringStream << "./pmm_submit_set.sh ";
-    stringStream << sec;
-    stringStream << " ";
-    stringStream << bytes;
-    stringStream << " ";
-    stringStream << latency;
-    const std::string& tmp = stringStream.str();
+    auto f1 = std::async(&submit_stats_pm, sec, bytes, latency, 0, 0, false);
 
-    int exitcode = system(tmp.c_str());
+    //int exitcode = submit_stats_pm(sec, bytes, latency);
     //std::cout << tmp.c_str() << " exit code:" << exitcode << '\n';
-    } catch(std::exception& e) {
-        std::cout << "Fail: " << e.what() << '\n';
-    }
+
 //std::cout << "run_stats::update_set_op - done \n";
 }
 

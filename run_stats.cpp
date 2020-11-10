@@ -174,7 +174,7 @@ int submit_stats_pm(const unsigned int sec, unsigned int bytes, unsigned int lat
         if (is_get) 
             stringStream << "./pmm_submit_get.sh ";
         else
-            stringStream << "./pmm_submit_gst.sh ";
+            stringStream << "./pmm_submit_set.sh ";
         stringStream << sec;
         stringStream << " ";
         stringStream << bytes;

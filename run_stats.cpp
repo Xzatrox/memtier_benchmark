@@ -180,8 +180,8 @@ try{
     stringStream << " ";
     stringStream << misses;
     const std::string& tmp = stringStream.str();
-    system(tmp.c_str());
-std::cout << tmp.c_str();
+    int exitcode = system(tmp.c_str());
+    std::cout << tmp.c_str() << "exit code:" << exitcode << '\n';
     } catch(std::exception& e) {
         std::cout << e.what() << '\n';
 }
@@ -205,8 +205,9 @@ void run_stats::update_set_op(struct timeval* ts, unsigned int bytes, unsigned i
     stringStream << " ";
     stringStream << latency;
     const std::string& tmp = stringStream.str();
-std::cout << tmp.c_str();
-    system(tmp.c_str());
+
+    int exitcode = system(tmp.c_str());
+    std::cout << tmp.c_str() << "exit code:" << exitcode << '\n';
     } catch(std::exception& e) {
         std::cout << e.what() << '\n';
     }

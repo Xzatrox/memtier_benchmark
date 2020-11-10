@@ -165,6 +165,11 @@ void run_stats::roll_cur_stats(struct timeval* ts)
 
 void run_stats::update_get_op(struct timeval* ts, unsigned int bytes, unsigned int latency, unsigned int hits, unsigned int misses)
 {
+    roll_cur_stats(ts);
+    m_cur_stats.m_get_cmd.update_op(bytes, latency, hits, misses);
+
+    m_totals.update_op(bytes, latency);
+    hdr_record_value(m_get_latency_histogram,latency);
 
 try{
     const unsigned int sec = ts_diff(m_start_time, *ts) / 1000000;
@@ -181,21 +186,22 @@ try{
     stringStream << misses;
     const std::string& tmp = stringStream.str();
     int exitcode = system(tmp.c_str());
-    std::cout << tmp.c_str() << " exit code:" << exitcode << '\n';
+    //std::cout << tmp.c_str() << " exit code:" << exitcode << '\n';
     } catch(std::exception& e) {
         std::cout << "Fail: " << e.what() << '\n';
 }
-
-    roll_cur_stats(ts);
-    m_cur_stats.m_get_cmd.update_op(bytes, latency, hits, misses);
-
-    m_totals.update_op(bytes, latency);
-    hdr_record_value(m_get_latency_histogram,latency);
-std::cout << "run_stats::update_get_op - done \n";
+//std::cout << "run_stats::update_get_op - done \n";
 }
 
 void run_stats::update_set_op(struct timeval* ts, unsigned int bytes, unsigned int latency)
 {
+    roll_cur_stats(ts);
+
+    m_cur_stats.m_set_cmd.update_op(bytes, latency);
+
+    m_totals.update_op(bytes, latency);
+    hdr_record_value(m_set_latency_histogram,latency);
+
     try{
     const unsigned int sec = ts_diff(m_start_time, *ts) / 1000000;
     std::ostringstream stringStream;
@@ -208,18 +214,11 @@ void run_stats::update_set_op(struct timeval* ts, unsigned int bytes, unsigned i
     const std::string& tmp = stringStream.str();
 
     int exitcode = system(tmp.c_str());
-    std::cout << tmp.c_str() << " exit code:" << exitcode << '\n';
+    //std::cout << tmp.c_str() << " exit code:" << exitcode << '\n';
     } catch(std::exception& e) {
         std::cout << "Fail: " << e.what() << '\n';
     }
-
-    roll_cur_stats(ts);
-
-    m_cur_stats.m_set_cmd.update_op(bytes, latency);
-
-    m_totals.update_op(bytes, latency);
-    hdr_record_value(m_set_latency_histogram,latency);
-std::cout << "run_stats::update_set_op - done \n";
+//std::cout << "run_stats::update_set_op - done \n";
 }
 
 void run_stats::update_moved_get_op(struct timeval* ts, unsigned int bytes, unsigned int latency)

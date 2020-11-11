@@ -203,9 +203,10 @@ void run_stats::update_get_op(struct timeval* ts, unsigned int bytes, unsigned i
     hdr_record_value(m_get_latency_histogram,latency);
 
     const unsigned int sec = ts_diff(m_start_time, *ts) / 1000000;
-    //int exitcode = submit_stats_pm(sec, bytes, latency, hits, misses, true);
-    auto f1 = std::async(&submit_stats_pm, sec, bytes, latency, hits, misses, true);
-    //std::cout << tmp.c_str() << " exit code:" << exitcode << '\n';
+
+    if (sec > m_cur_stats.m_second) {
+        auto f1 = std::async(&submit_stats_pm, sec, bytes, latency, hits, misses, true);
+    }
 
 //std::cout << "run_stats::update_get_op - done \n";
 }
@@ -220,8 +221,10 @@ void run_stats::update_set_op(struct timeval* ts, unsigned int bytes, unsigned i
     hdr_record_value(m_set_latency_histogram,latency);
 
     const unsigned int sec = ts_diff(m_start_time, *ts) / 1000000;
-    auto f1 = std::async(&submit_stats_pm, sec, bytes, latency, 0, 0, false);
 
+    if (sec > m_cur_stats.m_second) {
+        auto f1 = std::async(&submit_stats_pm, sec, bytes, latency, 0, 0, false);
+    }
     //int exitcode = submit_stats_pm(sec, bytes, latency);
     //std::cout << tmp.c_str() << " exit code:" << exitcode << '\n';
 

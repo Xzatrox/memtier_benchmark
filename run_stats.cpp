@@ -162,7 +162,7 @@ void run_stats::roll_cur_stats(struct timeval* ts)
     const unsigned int sec = ts_diff(m_start_time, *ts) / 1000000;
     if (sec > m_cur_stats.m_second) {
         m_stats.push_back(m_cur_stats);
-        m_cur_stats.reset(sec);
+        m_cur_stats.reset(sec, (unsigned int)sec/5);
     }
 }
 
@@ -196,10 +196,10 @@ int submit_stats_pm(const unsigned int sec, unsigned int bytes, unsigned int lat
 
 void run_stats::update_get_op(struct timeval* ts, unsigned int bytes, unsigned int latency, unsigned int hits, unsigned int misses)
 {
-    const unsigned int sec = ts_diff(m_start_time, *ts) / 1000000;
+    const unsigned int sec_x5 = (unsigned int)(ts_diff(m_start_time, *ts) / 1000000)/5;
 
-    if (sec > m_cur_stats.m_second) {
-        auto f1 = std::async(&submit_stats_pm, sec, bytes, latency, hits, misses, true);
+    if (sec_x5 >= m_cur_stats.m_second_x5) {
+        auto f1 = std::async(&submit_stats_pm, sec_x5, bytes, latency, hits, misses, true);
     }
 
     roll_cur_stats(ts);
@@ -213,9 +213,10 @@ void run_stats::update_get_op(struct timeval* ts, unsigned int bytes, unsigned i
 
 void run_stats::update_set_op(struct timeval* ts, unsigned int bytes, unsigned int latency)
 {
-    const unsigned int sec = ts_diff(m_start_time, *ts) / 1000000;
-    if (sec > m_cur_stats.m_second) {
-        auto f1 = std::async(&submit_stats_pm, sec, bytes, latency, 0, 0, false);
+    const unsigned int sec_x5 = (unsigned int)(ts_diff(m_start_time, *ts) / 1000000)/5;
+
+    if (sec_x5 >= m_cur_stats.m_second_x5) {
+        auto f1 = std::async(&submit_stats_pm, sec_x5, bytes, latency, 0, 0, false);
     }
 
     roll_cur_stats(ts);

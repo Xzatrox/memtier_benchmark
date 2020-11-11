@@ -117,6 +117,7 @@ public:
 class one_second_stats {
 public:
     unsigned int m_second;        // from start of test
+    unsigned int m_second_x5;        // from start of test 
     one_sec_cmd_stats m_set_cmd;
     one_sec_cmd_stats m_get_cmd;
     one_sec_cmd_stats m_wait_cmd;
@@ -124,6 +125,7 @@ public:
     one_second_stats(unsigned int second);
     void setup_arbitrary_commands(size_t n_arbitrary_commands);
     void reset(unsigned int second);
+    void reset(unsigned int second, unsigned int second_x5);
     void merge(const one_second_stats& other);
 };
 

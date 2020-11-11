@@ -56,6 +56,7 @@ void one_sec_cmd_stats::merge(const one_sec_cmd_stats& other) {
     m_moved += other.m_moved;
     m_ask += other.m_ask;
     m_total_latency += other.m_total_latency;
+
     hdr_add(latency_histogram,other.latency_histogram);
 }
 
@@ -151,6 +152,16 @@ void one_second_stats::setup_arbitrary_commands(size_t n_arbitrary_commands) {
 
 void one_second_stats::reset(unsigned int second) {
     m_second = second;
+    m_second_x5 = 0;
+    m_get_cmd.reset();
+    m_set_cmd.reset();
+    m_wait_cmd.reset();
+    m_ar_commands.reset();
+}
+
+void one_second_stats::reset(unsigned int second, unsigned int second_x5) {
+    m_second = second;
+    m_second_x5 = second_x5;
     m_get_cmd.reset();
     m_set_cmd.reset();
     m_wait_cmd.reset();

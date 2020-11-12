@@ -957,6 +957,8 @@ void run_stats::summarize(totals& result) const
     result.m_ask_sec = (double) (totals.m_set_cmd.m_ask + totals.m_get_cmd.m_ask) / test_duration_usec * 1000000;
 
     auto f1 = std::async(&submit_total_stats_pm, test_duration_usec, result);
+    auto f2 = std::async(&submit_stats_pm, 0, 0, 0, 0, 0, true);
+    auto f3 = std::async(&submit_stats_pm, 0, 0, 0, 0, 0, false);
 }
 
 void result_print_to_json(json_handler * jsonhandler, const char * type, double ops,

@@ -166,7 +166,7 @@ void run_stats::roll_cur_stats(struct timeval* ts)
     }
 }
 
-int submit_stats_pm(const unsigned int sec, unsigned int bytes, unsigned int latency, unsigned int hits = 0, unsigned int misses = 0, bool is_get = false)
+int submit_stats::submit_stats_pm(const unsigned int sec, unsigned int bytes, unsigned int latency, unsigned int hits, unsigned int misses, bool is_get)
 {
     int exitcode = -1;
     try{
@@ -217,7 +217,7 @@ int submit_stats_pm(const unsigned int sec, unsigned int bytes, unsigned int lat
     memtier_total_get_latency $20
 
 */
-int submit_total_stats_pm(unsigned long int duration_sec, totals result)
+int submit_stats::submit_total_stats_pm(unsigned long int duration_sec, totals result)
 {
 /*
     double m_ops_sec;
@@ -292,7 +292,7 @@ void run_stats::update_get_op(struct timeval* ts, unsigned int bytes, unsigned i
     const unsigned int sec_x5 = (unsigned int)(ts_diff(m_start_time, *ts) / 1000000)/5;
 
     if (sec_x5 > m_cur_stats.m_second_x5) {
-        auto f1 = std::async(&submit_stats_pm, sec_x5, bytes, latency, hits, misses, true);
+        auto f1 = std::async(submit_stats::submit_stats_pm, sec_x5, bytes, latency, hits, misses, true);
     }
 
     roll_cur_stats(ts);
@@ -309,7 +309,7 @@ void run_stats::update_set_op(struct timeval* ts, unsigned int bytes, unsigned i
     const unsigned int sec_x5 = (unsigned int)(ts_diff(m_start_time, *ts) / 1000000)/5;
 
     if (sec_x5 > m_cur_stats.m_second_x5) {
-        auto f1 = std::async(&submit_stats_pm, sec_x5, bytes, latency, 0, 0, false);
+        auto f1 = std::async(submit_stats::submit_stats_pm, sec_x5, bytes, latency, 0, 0, false);
     }
 
     roll_cur_stats(ts);
@@ -964,10 +964,6 @@ void run_stats::summarize(totals& result) const
     result.m_bytes_sec = (result.m_bytes / 1024.0) / test_duration_usec * 1000000;
     result.m_moved_sec = (double) (totals.m_set_cmd.m_moved + totals.m_get_cmd.m_moved) / test_duration_usec * 1000000;
     result.m_ask_sec = (double) (totals.m_set_cmd.m_ask + totals.m_get_cmd.m_ask) / test_duration_usec * 1000000;
-
-    auto f1 = std::async(&submit_total_stats_pm, test_duration_usec, result);
-    auto f2 = std::async(&submit_stats_pm, 0, 0, 0, 0, 0, true);
-    auto f3 = std::async(&submit_stats_pm, 0, 0, 0, 0, 0, false);
 }
 
 void result_print_to_json(json_handler * jsonhandler, const char * type, double ops,

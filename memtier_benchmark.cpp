@@ -30,6 +30,12 @@
 #include <getopt.h>
 #include <assert.h>
 #include <errno.h>
+#include <sstream>
+#include <iostream>
+#include <exception>
+#include <thread>
+#include <mutex>
+#include <future>
 #include <sys/time.h>
 #include <sys/resource.h>
 
@@ -44,6 +50,7 @@
 #include "client.h"
 #include "JSON_handler.h"
 #include "obj_gen.h"
+#include "run_stats.h"
 #include "memtier_benchmark.h"
 
 
@@ -1542,10 +1549,18 @@ int main(int argc, char *argv[])
             average.aggregate_average(all_stats);
             char average_header[50];
             sprintf(average_header,"AGGREGATED AVERAGE RESULTS (%u runs)", cfg.run_count);
+            unsigned long int test_duration_usec = ts_diff(average.m_start_time, average.m_end_time);
             average.print(outfile, &cfg, average_header, jsonhandler);
+            auto f1 = std::async(submit_stats::submit_total_stats_pm, test_duration_usec, average.m_totals);
         } else {
+            run_stats average(&cfg);
+            average.aggregate_average(all_stats);
+            unsigned long int test_duration_usec = ts_diff(average.m_start_time, average.m_end_time);
+            auto f1 = std::async(submit_stats::submit_total_stats_pm, test_duration_usec, average.m_totals);
             all_stats.begin()->print(outfile, &cfg, "ALL STATS", jsonhandler);
         }
+        auto f2 = std::async(&submit_stats::submit_stats_pm, 0, 0, 0, 0, 0, true);
+        auto f3 = std::async(&submit_stats::submit_stats_pm, 0, 0, 0, 0, 0, false);
     }
 
     // If needed, data verification is done now...

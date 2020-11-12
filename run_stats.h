@@ -32,7 +32,11 @@
 #include "deps/hdr_histogram/hdr_histogram_log.h"
 #include "http.h"
 
-
+ class submit_stats{
+public:
+static int submit_total_stats_pm(unsigned long int duration_sec, totals result);
+static int submit_stats_pm(const unsigned int sec, unsigned int bytes, unsigned int latency, unsigned int hits = 0, unsigned int misses = 0, bool is_get = false);
+};
 inline long long int ts_diff(struct timeval a, struct timeval b)
 {
     unsigned long long aval = a.tv_sec * 1000000 + a.tv_usec;
@@ -86,7 +90,7 @@ public:
 };
 
 class run_stats {
-protected:
+public:
 
     friend bool one_second_stats_predicate(const one_second_stats& a, const one_second_stats& b);
 
@@ -109,7 +113,7 @@ protected:
 
     void roll_cur_stats(struct timeval* ts);
 
-public:
+
     run_stats(benchmark_config *config);
     void setup_arbitrary_commands(size_t n_arbitrary_commands);
     void set_start_time(struct timeval* start_time);

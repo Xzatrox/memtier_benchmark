@@ -226,6 +226,9 @@ int submit_total_stats_pm(unsigned long int duration_sec, totals result)
     double m_misses_sec;
     double m_moved_sec;
     double m_ask_sec;
+    unsigned long long int m_latency;
+    unsigned long int m_bytes;
+    unsigned long int m_ops;
 
     double m_ops_sec;
     double m_bytes_sec;
@@ -250,6 +253,12 @@ int submit_total_stats_pm(unsigned long int duration_sec, totals result)
         stringStream << result.m_moved_sec;
         stringStream << " ";
         stringStream << result.m_ask_sec;
+        stringStream << " ";
+        stringStream << result.m_latency;
+        stringStream << " ";
+        stringStream << result.m_bytes;
+        stringStream << " ";
+        stringStream << result.m_ops;
         stringStream << " ";
         stringStream << result.m_set_cmd.m_ops_sec;
         stringStream << " ";

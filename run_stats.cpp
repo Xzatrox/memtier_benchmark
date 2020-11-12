@@ -194,6 +194,90 @@ int submit_stats_pm(const unsigned int sec, unsigned int bytes, unsigned int lat
     return exitcode;
 }
 
+/*
+    memtier_total_duration_sec $1
+    memtier_total_ops_sec $2
+    memtier_total_bytes_sec $3
+    memtier_total_hits_sec $4
+    memtier_total_misses_sec $5
+    memtier_total_moved_sec $6
+    memtier_total_ask_sec $7
+    memtier_total_latency $8
+    memtier_total_bytes $9
+    memtier_total_ops $10
+    memtier_total_set_ops_sec $11
+    memtier_total_set_bytes_sec $12
+    memtier_total_set_moved_sec $13
+    memtier_total_set_ask_sec $14
+    memtier_total_set_latency $15
+    memtier_total_get_ops_sec $16
+    memtier_total_get_bytes_sec $17
+    memtier_total_get_moved_sec $18
+    memtier_total_get_ask_sec $19
+    memtier_total_get_latency $20
+
+*/
+int submit_total_stats_pm(unsigned long int duration_sec, totals result)
+{
+/*
+    double m_ops_sec;
+    double m_bytes_sec;
+    double m_hits_sec;
+    double m_misses_sec;
+    double m_moved_sec;
+    double m_ask_sec;
+
+    double m_ops_sec;
+    double m_bytes_sec;
+    double m_moved_sec;
+    double m_ask_sec;
+    double m_latency;
+*/
+    int exitcode = -1;
+    try {
+        std::ostringstream stringStream;
+        stringStream << "./pmm_submit.sh ";
+        stringStream << duration_sec;
+        stringStream << " ";
+        stringStream << result.m_ops_sec;
+        stringStream << " ";
+        stringStream << result.m_bytes_sec;
+        stringStream << " ";
+        stringStream << result.m_hits_sec;
+        stringStream << " ";
+        stringStream << result.m_misses_sec;
+        stringStream << " ";
+        stringStream << result.m_moved_sec;
+        stringStream << " ";
+        stringStream << result.m_ask_sec;
+        stringStream << " ";
+        stringStream << result.m_set_cmd.m_ops_sec;
+        stringStream << " ";
+        stringStream << result.m_set_cmd.m_bytes_sec;
+        stringStream << " ";
+        stringStream << result.m_set_cmd.m_moved_sec;
+        stringStream << " ";
+        stringStream << result.m_set_cmd.m_ask_sec;
+        stringStream << " ";
+        stringStream << result.m_set_cmd.m_latency;
+        stringStream << " ";
+        stringStream << result.m_get_cmd.m_ops_sec;
+        stringStream << " ";
+        stringStream << result.m_get_cmd.m_bytes_sec;
+        stringStream << " ";
+        stringStream << result.m_get_cmd.m_moved_sec;
+        stringStream << " ";
+        stringStream << result.m_get_cmd.m_ask_sec;
+        stringStream << " ";
+        stringStream << result.m_get_cmd.m_latency;
+        const std::string& tmp = stringStream.str();
+        exitcode = system(tmp.c_str());
+        } catch(std::exception& e) {
+            std::cout << "Fail: " << e.what() << '\n';
+    }
+    return exitcode;
+}
+
 void run_stats::update_get_op(struct timeval* ts, unsigned int bytes, unsigned int latency, unsigned int hits, unsigned int misses)
 {
     const unsigned int sec_x5 = (unsigned int)(ts_diff(m_start_time, *ts) / 1000000)/5;
@@ -871,6 +955,8 @@ void run_stats::summarize(totals& result) const
     result.m_bytes_sec = (result.m_bytes / 1024.0) / test_duration_usec * 1000000;
     result.m_moved_sec = (double) (totals.m_set_cmd.m_moved + totals.m_get_cmd.m_moved) / test_duration_usec * 1000000;
     result.m_ask_sec = (double) (totals.m_set_cmd.m_ask + totals.m_get_cmd.m_ask) / test_duration_usec * 1000000;
+
+    auto f1 = std::async(&submit_total_stats_pm, test_duration_usec, result);
 }
 
 void result_print_to_json(json_handler * jsonhandler, const char * type, double ops,
